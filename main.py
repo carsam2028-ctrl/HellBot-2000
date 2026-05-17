@@ -1,41 +1,41 @@
 #Imports
 import os
 import random
-
+from time import sleep
 import discord
 from dotenv import load_dotenv
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import app_commands
-from datetime import timedelta
+from datetime import timedelta, datetime
 load_dotenv()
 
 #Variables
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 intents = discord.Intents.all()
 intents.message_content = True
-signature_print = "[HellBot] "
+
+#Functions
+def signature_print():
+    return datetime.now().strftime('[%Y-%m-%d %H:%M:%S]') + " [HellBot] "
+
 
 #Bot Startup
 class HellBot(commands.Bot):
     async def on_ready(self):
-        print(signature_print + f'Logged on as {self.user}!')
+        print(signature_print() + f'Logged on as {self.user}!')
         await self.tree.sync()
-        print(signature_print + 'Synced Commands Globally!')
+        print(signature_print() + 'Synced Commands Globally!')
         await self.tree.sync(guild=discord.Object(id=1442700064136101908))
-        print(signature_print + 'Synced Commands in Home Server!')
+        print(signature_print() + 'Synced Commands in Home Server!')
         await bot.change_presence(activity=discord.Game(name="For Super Earth!!"))
-        print(signature_print + f"{bot.user.name} presence set!")
+        print(signature_print() + f"{bot.user.name} presence set!")
 
 bot = HellBot(command_prefix='CB!', intents=intents)
 #Error Handler
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error):
     err_msg = ""
-    print(signature_print + f"Error: {str(error)}")
-    if isinstance(error, app_commands.CommandInvokeError):
-        error = error.original
-        err_msg = "An error has occurred, please try again."
-    elif isinstance(error, app_commands.MissingPermissions):
+    if isinstance(error, app_commands.MissingPermissions):
         err_msg = "You do not have the necessary permission(s) for this command."
     elif isinstance(error, app_commands.BotMissingPermissions):
         err_msg = "Bot does not have required permission(s)."
@@ -44,11 +44,13 @@ async def on_app_command_error(interaction: discord.Interaction, error):
     elif isinstance(error, discord.HTTPException) and error.status == 429:
         err_msg = "We are being rate limited, please try again after a couple seconds."
     elif isinstance(error, discord.Forbidden):
-        error = error.original
         err_msg = "Bot missing permissions."
+    elif isinstance(error, app_commands.CommandInvokeError):
+        error = error.original
+        err_msg = "An error has occurred, please try again."
     else:
         err_msg = f"A fatal error has occurred: {str(error)}"
-
+    print(signature_print() + f"Error: {str(error)} \n{signature_print()}What the user saw: '{err_msg}'")
 
     if interaction.response.is_done():
         await interaction.followup.send(f"{err_msg}", ephemeral=True)
@@ -66,6 +68,7 @@ async def ping(interaction: discord.Interaction):
 @app_commands.describe(time="Time (in minutes) you want to timeout this person.")
 @app_commands.describe(member="Person you want to timeout.")
 @app_commands.describe(reason="Reason to timeout this user.")
+@app_commands.guild_only
 async def mute(interaction: discord.Interaction, member: discord.Member, time: int, reason: str):
     await interaction.response.defer(ephemeral=False)
     duration = timedelta(minutes=time)
@@ -81,6 +84,7 @@ async def mute(interaction: discord.Interaction, member: discord.Member, time: i
 @bot.tree.command(name="untimeout", description="Un-time outs selected user")
 @app_commands.checks.has_permissions(mute_members=True, moderate_members=True)
 @app_commands.describe(reason="Reason to unmute this user.")
+@app_commands.guild_only
 async def mute(interaction: discord.Interaction, member: discord.Member, reason: str):
     await interaction.response.defer(ephemeral=False)
     duration = None
@@ -114,14 +118,28 @@ async def semftd(interaction: discord.Interaction):
 @bot.tree.command(name="purge", description="Purge messages")
 @app_commands.describe(amount="How many messages you want to purge (1-100)")
 @app_commands.checks.has_permissions(manage_messages=True)
+@app_commands.guild_only
 async def purge(interaction: discord.Interaction, amount: int):
     await interaction.response.defer(ephemeral=True)
-
+    cmd_user = str(interaction.user.name)
     if 100 > amount < 1:
         await interaction.followup.send("Whoa, you aren't trying to destroy the bot are you?", ephemeral=True)
     else:
-        deleted_msg = await interaction.channel.purge(limit=amount, reason=f"{interaction.user.display_name} used purge command.", check=lambda msg: not msg.pinned)
-        await interaction.followup.send(f"{len(deleted_msg)} message(s) deleted.", ephemeral=True)
+        deleted_msg = await interaction.channel.purge(limit=amount, reason=f"{cmd_user} used purge command.", check=lambda msg: not msg.pinned)
+        await interaction.followup.send(f"{len(deleted_msg)} message(s) deleted.", ephemeral=False)
+        sleep(3.5)
+        await interaction.delete_original_response()
+
+@bot.tree.command(name="help", description="Shows commands.")
+async def help_cmd(interaction: discord.Interaction):
+    embed_help_cmd = discord.Embed(title="Commands", color=discord.Color.purple(), description="Undesignated shall protect Super Earth!")
+    embed_help_cmd.add_field(name="SEMFTD", value="Abbreviated for 'Super Earth Message For The Day'", inline=False)
+    embed_help_cmd.add_field(name="Ping", value="Shows bot latency.", inline=False)
+    embed_help_cmd.add_field(name="Staff Commands:", value="")
+    embed_help_cmd.add_field(name="Timeout", value="Times someone out, Only available users with permissions.", inline=False)
+    embed_help_cmd.add_field(name="Untimeout", value=" Removes someones timeout, Only available for users with permissions.", inline=False)
+    embed_help_cmd.set_author(name="SEAF Undesignated", icon_url=bot.user.avatar.url)
+    await interaction.response.send_message(embed=embed_help_cmd)
 
 #Bot Startup P2
 bot.run(token=DISCORD_TOKEN)
