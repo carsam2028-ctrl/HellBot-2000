@@ -57,6 +57,10 @@ async def on_app_command_error(interaction: discord.Interaction, error):
 
 
 #Commands
+@bot.tree.command(name="ping", description="Check the bot's latency")
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Latency: {round(bot.latency * 1000)}ms")
+
 @bot.tree.command(name="timeout", description="Timeouts selected user")
 @app_commands.checks.has_permissions(mute_members=True, moderate_members=True)
 @app_commands.describe(time="Time (in minutes) you want to timeout this person.")
@@ -106,6 +110,18 @@ async def semftd(interaction: discord.Interaction):
         await interaction.followup.send(semftd4)
     if random_semftd == 5:
         await interaction.followup.send(semftd5)
+
+@bot.tree.command(name="purge", description="Purge messages")
+@app_commands.describe(amount="How many messages you want to purge (1-100)")
+@app_commands.checks.has_permissions(manage_messages=True)
+async def purge(interaction: discord.Interaction, amount: int):
+    await interaction.response.defer(ephemeral=True)
+
+    if 100 > amount < 1:
+        await interaction.followup.send("Whoa, you aren't trying to destroy the bot are you?", ephemeral=True)
+    else:
+        deleted_msg = await interaction.channel.purge(limit=amount, reason=f"{interaction.user.display_name} used purge command.", check=lambda msg: not msg.pinned)
+        await interaction.followup.send(f"{len(deleted_msg)} message(s) deleted.", ephemeral=True)
 
 #Bot Startup P2
 bot.run(token=DISCORD_TOKEN)
