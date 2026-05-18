@@ -81,7 +81,7 @@ async def mute(interaction: discord.Interaction, member: discord.Member, time: i
     await member.timeout(duration, reason=reason)
     await interaction.followup.send(f"{member} has been timed out for {time} minutes. Reason: {reason}", ephemeral=False)
 
-@bot.tree.command(name="untimeout", description="Un-time outs selected user")
+@bot.tree.command(name="removetimeout", description="Un-time outs selected user")
 @app_commands.checks.has_permissions(mute_members=True, moderate_members=True)
 @app_commands.describe(reason="Reason to unmute this user.")
 @app_commands.guild_only
@@ -89,11 +89,11 @@ async def mute(interaction: discord.Interaction, member: discord.Member, reason:
     await interaction.response.defer(ephemeral=False)
     duration = None
     if member == interaction.user:
-        await interaction.followup.send("You cannot un-time out yourself!", ephemeral=True)
+        await interaction.followup.send("You cannot remove your own timeout!", ephemeral=True)
     if not member.is_timed_out():
         await interaction.followup.send("User is not timed out!")
     await member.timeout(duration, reason=reason)
-    await interaction.followup.send(f"{member} has been untimed out. Reason: {reason}", ephemeral=False)
+    await interaction.followup.send(f"{member} has been timeout removed. Reason: {reason}", ephemeral=False)
 
 @bot.tree.command(name="semftd", description="Super Earth Messages for the day")
 async def semftd(interaction: discord.Interaction):
