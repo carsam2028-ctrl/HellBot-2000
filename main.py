@@ -21,12 +21,6 @@ def signature_print():
 
 #Bot Startup
 class HellBot(commands.Bot):
-    async def setup_hook(self):
-        for filename in os.listdir('./commands'):
-            if filename.endswith('.py'):
-                await self.load_extension(f'commands.{filename[:-3]}')
-                print(signature_print() + f'Loaded extension: {filename}')
-
     async def on_ready(self):
         print(signature_print() + f'Logged on as {self.user}!')
         await self.tree.sync()
@@ -51,19 +45,101 @@ async def on_app_command_error(interaction: discord.Interaction, error):
         err_msg = "We are being rate limited, please try again after a couple seconds."
     elif isinstance(error, discord.Forbidden):
         err_msg = "Bot missing permissions."
+    elif isinstance(error, app_commands.CommandInvokeError):
+        error = error.original
+        err_msg = "An error has occurred, please try again."
     else:
-        if isinstance(error, app_commands.CommandInvokeError):
-            error = error.original
-            err_msg = "An error has occurred, please try again."
-        else:
-            err_msg = f"A fatal error has occurred: {str(error)}"
-
+        err_msg = f"A fatal error has occurred: {str(error)}"
     print(signature_print() + f"Error: {str(error)} \n{signature_print()}What the user saw: '{err_msg}'")
 
     if interaction.response.is_done():
         await interaction.followup.send(f"{err_msg}", ephemeral=True)
     else:
         await interaction.response.send_message(f"{err_msg}", ephemeral=True)
+
+
+#Commands
+@bot.tree.command(name="ping", description="Check the bot's latency")
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Latency: {round(bot.latency * 1000)}ms")
+
+@bot.tree.command(name="timeout", description="Timeouts selected user")
+@app_commands.checks.has_permissions(mute_members=True, moderate_members=True)
+@app_commands.describe(time="Time (in minutes) you want to timeout this person.")
+@app_commands.describe(member="Person you want to timeout.")
+@app_commands.describe(reason="Reason to timeout this user.")
+@app_commands.guild_only
+async def mute(interaction: discord.Interaction, member: discord.Member, time: int, reason: str):
+    await interaction.response.defer(ephemeral=False)
+    duration = timedelta(minutes=time)
+    if member == interaction.user:
+        await interaction.followup.send("You cannot timeout yourself!", ephemeral=True)
+    if time < 1:
+        await interaction.followup.send("Time cannot be less than 1 minute.", ephemeral=True)
+    if member == bot.user:
+        await interaction.followup.send("You cannot timeout the bot this way.", ephemeral=True)
+    await member.timeout(duration, reason=reason)
+    await interaction.followup.send(f"{member} has been timed out for {time} minutes. Reason: {reason}", ephemeral=False)
+
+@bot.tree.command(name="untimeout", description="Un-time outs selected user")
+@app_commands.checks.has_permissions(mute_members=True, moderate_members=True)
+@app_commands.describe(reason="Reason to unmute this user.")
+@app_commands.guild_only
+async def mute(interaction: discord.Interaction, member: discord.Member, reason: str):
+    await interaction.response.defer(ephemeral=False)
+    duration = None
+    if member == interaction.user:
+        await interaction.followup.send("You cannot un-time out yourself!", ephemeral=True)
+    if not member.is_timed_out():
+        await interaction.followup.send("User is not timed out!")
+    await member.timeout(duration, reason=reason)
+    await interaction.followup.send(f"{member} has been untimed out. Reason: {reason}", ephemeral=False)
+
+@bot.tree.command(name="semftd", description="Super Earth Messages for the day")
+async def semftd(interaction: discord.Interaction):
+    await interaction.response.defer()
+    semftd1 = "Super Earth liberates those from tyranny and deception!"
+    semftd2 = "Automatons are lead under tyranny and control."
+    semftd3 = "Helldivers protect our liberty and Managed Democracy!"
+    semftd4 = "Squids, Bugs, and Automatons destroy our way of life, stop them!"
+    semftd5 = "Report any undemocratic speech to your democracy officer!"
+    random_semftd = random.randint(1, 5)
+    if random_semftd == 1:
+        await interaction.followup.send(semftd1)
+    if random_semftd == 2:
+        await interaction.followup.send(semftd2)
+    if random_semftd == 3:
+        await interaction.followup.send(semftd3)
+    if random_semftd == 4:
+        await interaction.followup.send(semftd4)
+    if random_semftd == 5:
+        await interaction.followup.send(semftd5)
+
+@bot.tree.command(name="purge", description="Purge messages")
+@app_commands.describe(amount="How many messages you want to purge (1-100)")
+@app_commands.checks.has_permissions(manage_messages=True)
+@app_commands.guild_only
+async def purge(interaction: discord.Interaction, amount: int):
+    await interaction.response.defer(ephemeral=True)
+    cmd_user = str(interaction.user.name)
+    if 100 > amount < 1:
+        await interaction.followup.send("Whoa, you aren't trying to destroy the bot are you?", ephemeral=True)
+    else:
+        deleted_msg = await interaction.channel.purge(limit=amount, reason=f"{cmd_user} used purge command.", check=lambda msg: not msg.pinned)
+        await interaction.followup.send(f"{len(deleted_msg)} message(s) deleted.", ephemeral=False)
+        sleep(3.5)
+        await interaction.delete_original_response()
+
+@bot.tree.command(name="help", description="Shows commands.")
+async def help_cmd(interaction: discord.Interaction):
+    embed_help_cmd = discord.Embed(title="Commands", color=discord.Color.purple(), description="Undesignated shall protect Super Earth!")
+    embed_help_cmd.add_field(name="SEMFTD", value="Abbreviated for 'Super Earth Message For The Day'", inline=False)
+    embed_help_cmd.add_field(name="Ping", value="Shows bot latency.", inline=False)
+    embed_help_cmd.add_field(name="Staff Commands:", value="")
+    embed_help_cmd.add_field(name="Timeout", value="Times someone out, Only available users with permissions.", inline=False)
+    embed_help_cmd.add_field(name="Untimeout", value=" Removes someones timeout, Only available for users with permissions.", inline=False)
+    embed_help_cmd.set_author(name="SEAF Undesignated", icon_url=bot.user.avatar.url)
+    await interaction.response.send_message(embed=embed_help_cmd)
 
 #Bot Startup P2
 bot.run(token=DISCORD_TOKEN)
