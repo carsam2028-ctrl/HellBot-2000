@@ -45,11 +45,13 @@ async def on_app_command_error(interaction: discord.Interaction, error):
         err_msg = "We are being rate limited, please try again after a couple seconds."
     elif isinstance(error, discord.Forbidden):
         err_msg = "Bot missing permissions."
-    elif isinstance(error, app_commands.CommandInvokeError):
-        error = error.original
-        err_msg = "An error has occurred, please try again."
     else:
-        err_msg = f"A fatal error has occurred: {str(error)}"
+        if isinstance(error, app_commands.CommandInvokeError):
+            error = error.original
+            err_msg = "An error has occurred, please try again."
+        else:
+            err_msg = f"A fatal error has occurred: {str(error)}"
+
     print(signature_print() + f"Error: {str(error)} \n{signature_print()}What the user saw: '{err_msg}'")
 
     if interaction.response.is_done():
