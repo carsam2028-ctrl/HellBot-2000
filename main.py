@@ -21,6 +21,12 @@ def signature_print():
 
 #Bot Startup
 class HellBot(commands.Bot):
+    async def setup_hook(self):
+        for filename in os.listdir('./commands'):
+            if filename.endswith('.py'):
+                await self.load_extension(f'commands.{filename[:-3]}')
+                print(signature_print() + f'Loaded command: {filename}')
+
     async def on_ready(self):
         print(signature_print() + f'Logged on as {self.user}!')
         await self.tree.sync()
@@ -30,7 +36,8 @@ class HellBot(commands.Bot):
         await bot.change_presence(activity=discord.Game(name="For Super Earth!!"))
         print(signature_print() + f"{bot.user.name} presence set!")
 
-bot = HellBot(command_prefix='CB!', intents=intents)
+bot = HellBot(command_prefix='HB!', intents=intents)
+
 #Error Handler
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error):
@@ -58,6 +65,5 @@ async def on_app_command_error(interaction: discord.Interaction, error):
         await interaction.followup.send(f"{err_msg}", ephemeral=True)
     else:
         await interaction.response.send_message(f"{err_msg}", ephemeral=True)
-
 #Bot Startup P2
 bot.run(token=DISCORD_TOKEN)
