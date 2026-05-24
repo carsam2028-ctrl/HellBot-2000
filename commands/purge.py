@@ -2,7 +2,7 @@ import discord
 import time
 from discord import app_commands
 from discord.ext import commands
-
+from time import sleep
 
 class Purge(commands.Cog):
     def __init__(self, bot):

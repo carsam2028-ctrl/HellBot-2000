@@ -8,14 +8,16 @@ class Help(commands.Cog):
 
     @app_commands.command(name="help", description="Shows commands.")
     async def help_cmd(self, interaction: discord.Interaction):
-        embed_help_cmd = discord.Embed(title="Commands", color=discord.Color.purple(), description="Undesignated shall protect Super Earth!")
-        embed_help_cmd.add_field(name="SEMFTD", value="Abbreviated for 'Super Earth Message For The Day'", inline=False)
-        embed_help_cmd.add_field(name="Ping", value="Shows bot latency.", inline=False)
-        embed_help_cmd.add_field(name="Staff Commands:", value="")
-        embed_help_cmd.add_field(name="Timeout", value="Times someone out, Only available users with permissions.", inline=False)
-        embed_help_cmd.add_field(name="Untimeout", value=" Removes someones timeout, Only available for users with permissions.", inline=False)
-        embed_help_cmd.set_author(name="SEAF Undesignated", icon_url=bot.user.avatar.url)
-        await interaction.response.send_message(embed=embed_help_cmd)
+        embed_help = discord.Embed(title="Commands", color=discord.Color.purple(), description="Undesignated shall protect Super Earth!")
+        embed_help.add_field(name="SEMFTD", value="Abbreviated for 'Super Earth Message For The Day'", inline=False)
+        embed_help.add_field(name="Ping", value="Shows bot latency.", inline=False)
+        embed_help.add_field(name="Staff Commands:", value="")
+        embed_help.add_field(name="Timeout", value="Times someone out, Only available users with permissions.", inline=False)
+        embed_help.add_field(name="Removetimeout", value=" Removes someones timeout, Only available for users with permissions.", inline=False)
+        embed_help.add_field(name="Addsquadrole", value="Adds squad role to specified user, Only available users with permissions.", inline=False)
+        embed_help.add_field(name="Removesquadrole", value=" Removes specified users squad role, Only available for users with permissions.", inline=False)
+        embed_help.set_author(name="SEAF Undesignated", icon_url=bot.user.avatar.url)
+        await interaction.response.send_message(embed=embed_help)
 
 async def setup(bot):
     await bot.add_cog(Help(bot))
