@@ -19,7 +19,10 @@ class Purge(commands.Cog):
             await interaction.followup.send("Whoa, you aren't trying to destroy the bot are you?", ephemeral=True)
         else:
             deleted_msg = await interaction.channel.purge(limit=amount, reason=f"{cmd_user} used purge command.", check=lambda msg: not msg.pinned)
-            await interaction.followup.send(f"{len(deleted_msg)} message(s) deleted.", ephemeral=False)
+            if len(deleted_msg) is 1:
+                await interaction.followup.send(f"1 message deleted.", ephemeral=False)
+            else:
+                await interaction.followup.send(f"{len(deleted_msg)} messages deleted.", ephemeral=False)
             sleep(3.5)
             await interaction.delete_original_response()
 

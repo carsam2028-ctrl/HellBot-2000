@@ -44,13 +44,13 @@ async def on_app_command_error(interaction: discord.Interaction, error):
     err_msg = ""
     if isinstance(error, app_commands.MissingPermissions):
         err_msg = "You do not have the necessary permission(s) for this command."
-    elif isinstance(error, app_commands.BotMissingPermissions):
+    if isinstance(error, app_commands.BotMissingPermissions):
         err_msg = "Bot does not have required permission(s)."
-    elif isinstance(error, discord.HTTPException):
+    if isinstance(error, discord.HTTPException):
         err_msg = "An HTTP Exception has occurred, try again."
-    elif isinstance(error, discord.HTTPException) and error.status == 429:
+    if isinstance(error, discord.HTTPException) and error.status == 429:
         err_msg = "We are being rate limited, please try again after a couple seconds."
-    elif isinstance(error, discord.Forbidden):
+    if isinstance(error, discord.Forbidden):
         err_msg = "Bot missing permissions."
     else:
         if isinstance(error, app_commands.CommandInvokeError):

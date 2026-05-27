@@ -8,7 +8,7 @@ class RemoveSquadRole(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="removesquadrole", description="Removes the members squad role.")
+    @app_commands.command(name="remove_squad_role", description="Removes the members squad role.")
     async def removesquadrole(self, interaction: discord.Interaction, member: discord.Member, reason: Optional[str]):
         await interaction.response.defer()
         if reason is None:

@@ -14,9 +14,9 @@ class Help(commands.Cog):
         embed_help.add_field(name="Staff Commands:", value="")
         embed_help.add_field(name="Timeout", value="Times someone out, Only available users with permissions.", inline=False)
         embed_help.add_field(name="Removetimeout", value=" Removes someones timeout, Only available for users with permissions.", inline=False)
-        embed_help.add_field(name="Addsquadrole", value="Adds squad role to specified user, Only available users with permissions.", inline=False)
-        embed_help.add_field(name="Removesquadrole", value=" Removes specified users squad role, Only available for users with permissions.", inline=False)
-        embed_help.set_author(name="SEAF Undesignated", icon_url=bot.user.avatar.url)
+        embed_help.add_field(name="Add Squad Role", value="Adds squad role to specified user, Only available users with permissions.", inline=False)
+        embed_help.add_field(name="Remove Squad Role", value=" Removes specified users squad role, Only available for users with permissions.", inline=False)
+        embed_help.set_author(name="SEAF Undesignated", icon_url=self.bot.user.avatar.url)
         await interaction.response.send_message(embed=embed_help)
 
 async def setup(bot):

@@ -7,7 +7,7 @@ class RemoveTimeout(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="untimeout", description="Un-time outs selected user")
+    @app_commands.command(name="removetimeout", description="Un-time outs selected user")
     @app_commands.checks.has_permissions(mute_members=True, moderate_members=True)
     @app_commands.describe(reason="Reason to unmute this user.")
     @app_commands.guild_only
